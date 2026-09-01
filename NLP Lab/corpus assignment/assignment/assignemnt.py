@@ -7,16 +7,17 @@ START = "<s>"
 END = "</s>"
 MAX_WORDS = 50
 
+
 def load_corpus(file_name):
     with open(file_name, "r", encoding="utf-8", errors="ignore") as file:
         return file.read()
 
 
 def clean_gutenberg(text):
-    text = re.sub(r"\*\*\* START OF .*?\*\*\*", " ", text,
-                  flags=re.IGNORECASE | re.DOTALL)
-    text = re.sub(r"\*\*\* END OF .*", " ", text,
-                  flags=re.IGNORECASE | re.DOTALL)
+    text = re.sub(
+        r"\*\*\* START OF .*?\*\*\*", " ", text, flags=re.IGNORECASE | re.DOTALL
+    )
+    text = re.sub(r"\*\*\* END OF .*", " ", text, flags=re.IGNORECASE | re.DOTALL)
     return text
 
 
@@ -61,7 +62,7 @@ def build_ngram_counts(sentences, n):
     for sentence in sentences:
         padded = [START] * (n - 1) + sentence + [END]
         for i in range(len(padded) - n + 1):
-            history = tuple(padded[i:i + n - 1])
+            history = tuple(padded[i : i + n - 1])
             next_word = padded[i + n - 1]
             model[history][next_word] += 1
     return model
@@ -89,10 +90,11 @@ def laplace_unigram_probability(unigram_counts, word, vocab_size):
 def model_name(n):
     return {4: "fourgram", 3: "trigram", 2: "bigram", 1: "unigram"}[n]
 
-#backoff
+
+# backoff
 def candidates_without_laplace(models, unigram_counts, history_words, highest_n):
     for n in range(highest_n, 1, -1):
-        history = tuple(history_words[-(n - 1):])
+        history = tuple(history_words[-(n - 1) :])
         if history in models[n]:
             candidates = {}
             for word in models[n][history]:
@@ -104,11 +106,14 @@ def candidates_without_laplace(models, unigram_counts, history_words, highest_n)
         candidates[word] = mle_unigram_probability(unigram_counts, word)
     return candidates, 1, tuple()
 
-#backoff with lapplace smoothing
-def candidates_with_laplace(models, unigram_counts, history_words, vocabulary, highest_n):
+
+# backoff with lapplace smoothing
+def candidates_with_laplace(
+    models, unigram_counts, history_words, vocabulary, highest_n
+):
     vocab_size = len(vocabulary)
     for n in range(highest_n, 1, -1):
-        history = tuple(history_words[-(n - 1):])
+        history = tuple(history_words[-(n - 1) :])
         if history in models[n]:
             candidates = {}
             for word in models[n][history]:
@@ -143,8 +148,9 @@ def format_sentence(words):
     return " ".join(words).capitalize() + "."
 
 
-def generate_sentence(models, unigram_counts, vocabulary, seed_text,
-                      highest_n, mode, use_laplace):
+def generate_sentence(
+    models, unigram_counts, vocabulary, seed_text, highest_n, mode, use_laplace
+):
     seed_words = clean_seed(seed_text, vocabulary)
     if not seed_words:
         seed_words = [START] * (highest_n - 1)
@@ -199,7 +205,6 @@ def main():
 
     if not os.path.exists(corpus_file):
         print("\nCorpus file not found:", corpus_file)
-        print("Put the corpus .txt file in the same folder as this Python file.")
         return
 
     sentences = preprocess_corpus(load_corpus(corpus_file))
@@ -209,9 +214,11 @@ def main():
 
     vocabulary = build_vocabulary(sentences)
     unigram_counts = build_unigram_counts(sentences)
-    models = {2: build_ngram_counts(sentences, 2),
-              3: build_ngram_counts(sentences, 3),
-              4: build_ngram_counts(sentences, 4)}
+    models = {
+        2: build_ngram_counts(sentences, 2),
+        3: build_ngram_counts(sentences, 3),
+        4: build_ngram_counts(sentences, 4),
+    }
     highest_n = get_highest_ngram_choice()
 
     print("\nCorpus loaded successfully.")
@@ -222,19 +229,23 @@ def main():
     while True:
         seed = input("\nEnter 1, 2, or 3 starting words: ").strip()
         if seed.lower() == "q":
-            print("Goodbye!")
+            print("!")
             break
         if seed and not clean_seed(seed, vocabulary):
             print("Note: input word not found in corpus, so sentence starts normally.")
 
-        no_random, _ = generate_sentence(models, unigram_counts, vocabulary,
-                                         seed, highest_n, "random", False)
-        no_max, no_info = generate_sentence(models, unigram_counts, vocabulary,
-                                            seed, highest_n, "max", False)
-        yes_random, _ = generate_sentence(models, unigram_counts, vocabulary,
-                                          seed, highest_n, "random", True)
-        yes_max, yes_info = generate_sentence(models, unigram_counts, vocabulary,
-                                              seed, highest_n, "max", True)
+        no_random, _ = generate_sentence(
+            models, unigram_counts, vocabulary, seed, highest_n, "random", False
+        )
+        no_max, no_info = generate_sentence(
+            models, unigram_counts, vocabulary, seed, highest_n, "max", False
+        )
+        yes_random, _ = generate_sentence(
+            models, unigram_counts, vocabulary, seed, highest_n, "random", True
+        )
+        yes_max, yes_info = generate_sentence(
+            models, unigram_counts, vocabulary, seed, highest_n, "max", True
+        )
 
         print("\nWITHOUT Laplace smoothing / MLE only:")
         print("Random:", no_random)
