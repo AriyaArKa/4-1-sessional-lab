@@ -43,7 +43,7 @@ def convolution(img, kernel):
             total = 0
             for m in range(kh):
                 for n in range(kw):
-                    total += padded_img[i + m, j + n] * kernel[kh - 1 - m, kh - 1 - n]
+                    total += padded_img[i + m, j + n] * kernel[kh - 1 - m, kw - 1 - n]
             output[i, j] = total
 
     return output
