@@ -1,9 +1,10 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
 
-#periodic noise
+# periodic noise
 def generate_noise(image, d=45, d0=2, A=1500000):
 
     rows, cols = image.shape
@@ -39,7 +40,8 @@ def generate_noise(image, d=45, d0=2, A=1500000):
     noisy_image = np.real(noisy_image)
     return np.clip(noisy_image, 0, 255).astype(np.uint8)
 
-#distance form center
+
+# distance form center
 def distance_from_center(rows, cols):
 
     D = np.zeros((rows, cols))
@@ -53,7 +55,7 @@ def distance_from_center(rows, cols):
     return D
 
 
-#ideal band reject filter
+# ideal band reject filter
 def ideal_band_reject(D, D0, W):
 
     H = np.ones(D.shape)
@@ -66,7 +68,7 @@ def ideal_band_reject(D, D0, W):
     return H
 
 
-#butterworth band reject filter
+# butterworth band reject filter
 def butterworth_band_reject(D, D0, W, n):
 
     H = np.ones(D.shape)
@@ -84,7 +86,7 @@ def butterworth_band_reject(D, D0, W, n):
     return H
 
 
-#gaussian band reject
+# gaussian band reject
 def gaussian_band_reject(D, D0, W):
 
     H = np.ones(D.shape)
@@ -99,13 +101,11 @@ def gaussian_band_reject(D, D0, W):
                 H[u, v] = 1 - np.exp(-0.5 * value**2)
     return H
 
-#filter apply
+
+# filter apply
 def apply_filter(image, H):
 
-    # Fourier Transform
     F = np.fft.fft2(image)
-
-    # Move zero frequency to center
     F_shift = np.fft.fftshift(F)
 
     # Apply filter
@@ -114,12 +114,19 @@ def apply_filter(image, H):
     # Move back
     G = np.fft.ifftshift(G_shift)
 
-    # Inverse Fourier Transform
     result = np.fft.ifft2(G)
     result = np.real(result)
     return np.clip(result, 0, 255).astype(np.uint8)
 
 
+def calculate_mangitude_spectrum(image):
+
+    F = np.fft.fft2(image)
+    F_shift = np.fft.fftshift(F)
+    magnitude_spectrum = np.abs(F_shift)
+    # power_spectrum = np.abs(F_shift)**2
+    magnitude_spectrum = np.log(1 + magnitude_spectrum)
+    return magnitude_spectrum
 
 
 # Read original image
@@ -130,10 +137,27 @@ if image is None:
     exit()
 
 
-# Generate noisy image
+# noisy image
 noisy_image = generate_noise(image)
 
-# Image size
+
+# # power sepctrum of correupter image
+# magnitude_spectrum = calculate_mangitude_spectrum(noisy_image)
+
+
+# plt.figure(figsize=(8, 8))
+# plt.imshow(magnitude_spectrum, cmap="gray")
+# plt.title("Power Spectrum of Corrupted Image")
+# plt.axis("off")
+# plt.tight_layout()
+
+
+# magnitude_spectrum_path = os.path.join("lab3_assignment", "magnitude_spectrum1.png")
+# plt.savefig(magnitude_spectrum_path, dpi=300, bbox_inches="tight")
+# print("magnitude_spectrum saved:", magnitude_spectrum_path)
+# plt.show()
+
+# size
 rows, cols = noisy_image.shape
 
 # Distance matrix
@@ -146,12 +170,12 @@ D0 = np.sqrt(45**2 + 45**2)
 W = 8
 n = 2
 
-#3 filter creation
+# 3 filter creation
 H_ideal = ideal_band_reject(D, D0, W)
 H_butterworth = butterworth_band_reject(D, D0, W, n)
 H_gaussian = gaussian_band_reject(D, D0, W)
 
-#3 filter apply
+# 3 filter apply
 ideal_image = apply_filter(noisy_image, H_ideal)
 butterworth_image = apply_filter(noisy_image, H_butterworth)
 gaussian_image = apply_filter(noisy_image, H_gaussian)
@@ -160,7 +184,7 @@ gaussian_image = apply_filter(noisy_image, H_gaussian)
 plt.figure(figsize=(12, 12))
 
 
-#ideal
+# ideal
 plt.subplot(3, 3, 1)
 plt.imshow(noisy_image, cmap="gray", vmin=0, vmax=255)
 plt.title("Input Corrupted Image with Noise")
@@ -177,7 +201,7 @@ plt.title("Reconstructed Image")
 plt.axis("off")
 
 
-#butterworth
+# butterworth
 plt.subplot(3, 3, 4)
 plt.imshow(noisy_image, cmap="gray", vmin=0, vmax=255)
 plt.title("Input Corrupted Image with Noise")
@@ -194,7 +218,7 @@ plt.title("Reconstructed Image")
 plt.axis("off")
 
 
-#gaussian
+# gaussian
 plt.subplot(3, 3, 7)
 plt.imshow(noisy_image, cmap="gray", vmin=0, vmax=255)
 plt.title("Input Corrupted Image with Noise")
@@ -215,7 +239,7 @@ plt.axis("off")
 plt.figtext(
     0.5,
     0.01,
-    "Figure 1: Comparison of Band Reject Filters",
+    "Figure 1: Comparison of Band Reject Filters(2107055)",
     ha="center",
     fontsize=14,
     fontweight="bold",
