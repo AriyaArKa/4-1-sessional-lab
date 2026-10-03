@@ -1,211 +1,268 @@
 #include <iostream>
 #include <string>
+#include <cstdlib>
+#include <ctime>
+
 using namespace std;
 
+
+// -------------------------
 // Manual XOR
-char XOR(char a, char b)
+// -------------------------
+char manualXOR(char a, char b)
 {
-    char result = 0;
-    int power = 1;
+    int x = a;
+    int y = b;
 
-    for (int i = 0; i < 8; i++)
+    int result = 0;
+    int place = 1;
+
+    while(x > 0 || y > 0)
     {
-        int x = a % 2;
-        int y = b % 2;
-
-        if (x != y)
-            result += power;
-
-        a = a / 2;
-        b = b / 2;
-
-        power = power * 2;
-    }
-
-    return result;
-}
-
-// Print binary
-void binary(char x)
-{
-    int b[8];
-
-    for (int i = 7; i >= 0; i--)
-    {
-        b[i] = x % 2;
+        int bit1 = x % 2;
+        int bit2 = y % 2;
+        if(bit1 != bit2)
+        {
+            result += place;
+        }
         x = x / 2;
+        y = y / 2;
+
+        place = place * 2;
+    }
+    return (char)result;
+}
+
+
+
+// -------------------------
+// Print Binary manually
+// -------------------------
+void printBinary(char x)
+{
+    int value = x;
+    int bin[8];
+
+    for(int i=7;i>=0;i--)
+    {
+        bin[i] = value % 2;
+        value = value / 2;
     }
 
-    for (int i = 0; i < 8; i++)
-        cout << b[i];
+    for(int i=0;i<8;i++)
+    {
+        cout<<bin[i];
+    }
 }
+
+// -------------------------
+// Generate random key string
+// -------------------------
+string generateKey(int size)
+{
+    string k="";
+    for(int i=0;i<size;i++)
+    {
+        char c = (rand()%26)+'A';
+
+        k += c;
+    }
+    return k;
+}
+
+
+
 
 int main()
 {
-    int n;
 
-    cout << "Enter matrix size: ";
-    cin >> n;
-
-    string a[10][10];
-    string t[10][10];
+    int row,col;
+    cout<<"Enter row size: ";
+    cin>>row;
+    cout<<"Enter column size: ";
+    cin>>col;
+    string plain[10][10];
+    string transpose[10][10];
     string key[10][10];
-    string enc[10][10];
-    string dec[10][10];
+    string cipher[10][10];
+    string decrypt[10][10];
+    string original[10][10];
+    //-------------------------
+    // Input Matrix
+    // -------------------------
 
-    // -------------------------------
-    // Input matrix
-    // -------------------------------
-    cout << "\nEnter matrix:\n";
-
-    for (int i = 0; i < n; i++)
+    cout<<"\nEnter Matrix:\n";
+    for(int i=0;i<row;i++)
     {
-        for (int j = 0; j < n; j++)
+        for(int j=0;j<col;j++)
         {
-            cin >> a[i][j];
+            cin>>plain[i][j];
         }
     }
 
-    // -------------------------------
-    // Display original
-    // -------------------------------
-    cout << "\nOriginal Matrix:\n";
+    cout<<"\nOriginal Matrix:\n";
 
-    for (int i = 0; i < n; i++)
+    for(int i=0;i<row;i++)
     {
-        for (int j = 0; j < n; j++)
-            cout << a[i][j] << "\t";
+        for(int j=0;j<col;j++)
+        {
+            cout<<plain[i][j]<<"\t";
+        }
 
-        cout << endl;
+        cout<<endl;
     }
 
-    // -------------------------------
+    // -------------------------
     // Transpose
-    // -------------------------------
-    for (int i = 0; i < n; i++)
+    // -------------------------
+
+    for(int i=0;i<row;i++)
     {
-        for (int j = 0; j < n; j++)
-            t[j][i] = a[i][j];
-    }
-
-    cout << "\nTransposed Matrix:\n";
-
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-            cout << t[i][j] << "\t";
-
-        cout << endl;
-    }
-
-    // -------------------------------
-    // Binary
-    // -------------------------------
-    cout << "\nTransposed Matrix in Binary:\n";
-
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
+        for(int j=0;j<col;j++)
         {
-            cout << "[";
-
-            for (int k = 0; k < t[i][j].length(); k++)
-            {
-                binary(t[i][j][k]);
-                cout << " ";
-            }
-
-            cout << "]\t";
-        }
-
-        cout << endl;
-    }
-
-    // -------------------------------
-    // Input key
-    // -------------------------------
-    cout << "\nEnter key matrix:\n";
-
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            cin >> key[i][j];
+            transpose[j][i]=plain[i][j];
         }
     }
 
-    // -------------------------------
+
+    cout<<"\nTranspose Matrix:\n";
+
+
+    for(int i=0;i<col;i++)
+    {
+        for(int j=0;j<row;j++)
+        {
+            cout<<transpose[i][j]<<"\t";
+        }
+
+        cout<<endl;
+    }
+
+    // -------------------------
+    // Generate Key
+    // -------------------------
+
+    cout<<"\nRandom Key Matrix:\n";
+
+
+    for(int i=0;i<col;i++)
+    {
+        for(int j=0;j<row;j++)
+        {
+            key[i][j]=generateKey(transpose[i][j].length());
+
+            cout<<key[i][j]<<"\t";
+        }
+
+        cout<<endl;
+    }
+
+    // -------------------------
     // Encryption
-    // -------------------------------
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            enc[i][j] = "";
+    // -------------------------
 
-            for (int k = 0; k < t[i][j].length(); k++)
+    for(int i=0;i<col;i++)
+    {
+        for(int j=0;j<row;j++)
+        {
+
+            cipher[i][j]="";
+
+
+            for(int k=0;k<transpose[i][j].length();k++)
             {
-                enc[i][j] += XOR(
-                    t[i][j][k],
+                cipher[i][j] += manualXOR(
+                    transpose[i][j][k],
                     key[i][j][k]
                 );
             }
+
         }
     }
 
-    // -------------------------------
-    // Encrypted binary
-    // -------------------------------
-    cout << "\nEncrypted Matrix in Binary:\n";
+    cout<<"\nCipher Text Binary:\n";
 
-    for (int i = 0; i < n; i++)
+
+    for(int i=0;i<col;i++)
     {
-        for (int j = 0; j < n; j++)
+        for(int j=0;j<row;j++)
         {
-            cout << "[";
 
-            for (int k = 0; k < enc[i][j].length(); k++)
+            cout<<"[";
+
+
+            for(int k=0;k<cipher[i][j].length();k++)
             {
-                binary(enc[i][j][k]);
-                cout << " ";
+                printBinary(cipher[i][j][k]);
+                cout<<" ";
             }
 
-            cout << "]\t";
+
+            cout<<"]\t";
         }
 
-        cout << endl;
+        cout<<endl;
     }
 
-    // -------------------------------
+    // -------------------------
     // Decryption
-    // -------------------------------
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            dec[i][j] = "";
+    // -------------------------
 
-            for (int k = 0; k < enc[i][j].length(); k++)
+    for(int i=0;i<col;i++)
+    {
+        for(int j=0;j<row;j++)
+        {
+
+            decrypt[i][j]="";
+
+
+            for(int k=0;k<cipher[i][j].length();k++)
             {
-                dec[i][j] += XOR(
-                    enc[i][j][k],
+
+                decrypt[i][j] += manualXOR(
+                    cipher[i][j][k],
                     key[i][j][k]
                 );
+
             }
+
         }
     }
 
-    // -------------------------------
-    // Decrypted matrix
-    // -------------------------------
-    cout << "\nDecrypted Matrix:\n";
+    cout<<"\nDecrypted Transpose Matrix:\n";
 
-    for (int i = 0; i < n; i++)
+    for(int i=0;i<col;i++)
     {
-        for (int j = 0; j < n; j++)
-            cout << dec[i][j] << "\t";
+        for(int j=0;j<row;j++)
+        {
+            cout<<decrypt[i][j]<<"\t";
+        }
 
-        cout << endl;
+        cout<<endl;
+    }
+
+    // -------------------------
+    // Reverse Transpose
+    // -------------------------
+
+    for(int i=0;i<row;i++)
+    {
+        for(int j=0;j<col;j++)
+        {
+            original[i][j]=decrypt[j][i];
+        }
+    }
+
+    cout<<"\nRecovered Original Matrix:\n";
+
+    for(int i=0;i<row;i++)
+    {
+        for(int j=0;j<col;j++)
+        {
+            cout<<original[i][j]<<"\t";
+        }
+
+        cout<<endl;
     }
 
     return 0;

@@ -16,7 +16,7 @@ int64 gcd(int64 a, int64 b)
 
 int64 mul_mod(int64 a, int64 b, int64 mod)
 {
-    return (int64)((__int128)a * b % mod);
+    return ((a % mod) * (b % mod)) % mod;
 }
 
 int64 mod_pow(int64 base, int64 exp, int64 mod)

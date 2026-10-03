@@ -123,8 +123,8 @@ int main()
     // 2. TWO MESSAGES
     // =================================================
 
-    int64 m1 = 5;
-    int64 m2 = 9;
+    int64 m1 = 50;
+    int64 m2 = 90;
 
     // Separate random values
     int64 r1 = 7;
